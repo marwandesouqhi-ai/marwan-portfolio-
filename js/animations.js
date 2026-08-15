@@ -1,7 +1,7 @@
 /* =========================================================
    MARWAN DESOWKY PORTFOLIO
    PREMIUM ANIMATIONS
-   GSAP + SCROLLTRIGGER
+   GSAP + SCROLLTRIGGER + LENIS
    ========================================================= */
 
 
@@ -23,6 +23,62 @@ gsap.config({
     nullTargetWarn: false
 
 });
+
+
+/* =========================================================
+   02B. SMOOTH SCROLL (LENIS)
+   NOTE: requires Lenis to be loaded before this file:
+   <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.min.js"></script>
+   ========================================================= */
+
+let lenis = null;
+
+if (typeof Lenis !== "undefined") {
+
+    lenis = new Lenis({
+
+        duration: 1.15,
+
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+
+        smoothWheel: true,
+
+        touchMultiplier: 1.2
+
+    });
+
+    lenis.on("scroll", ScrollTrigger.update);
+
+    gsap.ticker.add((time) => {
+
+        lenis.raf(time * 1000);
+
+    });
+
+    gsap.ticker.lagSmoothing(0);
+
+    // keep in-page anchor links working with Lenis
+    document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+
+        anchor.addEventListener("click", (e) => {
+
+            const targetId = anchor.getAttribute("href");
+
+            const target = document.querySelector(targetId);
+
+            if (target) {
+
+                e.preventDefault();
+
+                lenis.scrollTo(target, { offset: 0, duration: 1.2 });
+
+            }
+
+        });
+
+    });
+
+}
 
 
 /* =========================================================
@@ -1217,7 +1273,13 @@ projectCards.forEach(
 
 
 /* =========================================================
-   24. PROJECT OVERLAY HOVER
+   24. PROJECT OVERLAY HOVER — UPGRADED
+   Now includes: 3D tilt following the cursor, an image
+   zoom + counter-parallax, and a soft radial "glow" that
+   tracks the mouse (needs a <div class="project-glow"></div>
+   inside each .project-card, positioned absolute/inset:0,
+   pointer-events:none, and styled with a radial-gradient
+   background using CSS custom properties --x / --y).
    ========================================================= */
 
 projectCards.forEach(
@@ -1236,6 +1298,24 @@ projectCards.forEach(
             );
 
 
+        const image =
+            card.querySelector(
+                ".project-image img"
+            );
+
+
+        const glow =
+            card.querySelector(
+                ".project-glow"
+            );
+
+
+        const isFinePointer =
+            window.matchMedia(
+                "(pointer: fine)"
+            ).matches;
+
+
         if (
             !overlay ||
             !link
@@ -1244,6 +1324,13 @@ projectCards.forEach(
             return;
 
         }
+
+
+        card.style.transformStyle =
+            "preserve-3d";
+
+        card.style.transformPerspective =
+            "900px";
 
 
         const hoverTimeline =
@@ -1309,6 +1396,55 @@ projectCards.forEach(
             );
 
 
+        if (image) {
+
+            hoverTimeline.to(
+
+                image,
+
+                {
+
+                    scale:
+                        1.12,
+
+                    duration:
+                        0.6,
+
+                    ease:
+                        "power2.out"
+
+                },
+
+                0
+
+            );
+
+        }
+
+
+        if (glow) {
+
+            hoverTimeline.to(
+
+                glow,
+
+                {
+
+                    opacity:
+                        1,
+
+                    duration:
+                        0.4
+
+                },
+
+                0
+
+            );
+
+        }
+
+
         card.addEventListener(
             "mouseenter",
             () => {
@@ -1325,8 +1461,161 @@ projectCards.forEach(
 
                 hoverTimeline.reverse();
 
+
+                if (isFinePointer) {
+
+                    gsap.to(
+
+                        card,
+
+                        {
+
+                            rotateX:
+                                0,
+
+                            rotateY:
+                                0,
+
+                            duration:
+                                0.7,
+
+                            ease:
+                                "power3.out"
+
+                        }
+
+                    );
+
+                }
+
             }
         );
+
+
+        if (isFinePointer) {
+
+            card.addEventListener(
+                "mousemove",
+                (event) => {
+
+                    const rect =
+                        card.getBoundingClientRect();
+
+
+                    const x =
+                        event.clientX -
+                        rect.left;
+
+
+                    const y =
+                        event.clientY -
+                        rect.top;
+
+
+                    const rotateY =
+                        (
+                            x -
+                            rect.width / 2
+                        ) /
+                        rect.width *
+                        10;
+
+
+                    const rotateX =
+                        (
+                            y -
+                            rect.height / 2
+                        ) /
+                        rect.height *
+                        -10;
+
+
+                    gsap.to(
+
+                        card,
+
+                        {
+
+                            rotateX:
+                                rotateX,
+
+                            rotateY:
+                                rotateY,
+
+                            duration:
+                                0.5,
+
+                            ease:
+                                "power2.out",
+
+                            overwrite:
+                                "auto"
+
+                        }
+
+                    );
+
+
+                    if (glow) {
+
+                        gsap.set(
+
+                            glow,
+
+                            {
+
+                                "--x":
+                                    `${x}px`,
+
+                                "--y":
+                                    `${y}px`
+
+                            }
+
+                        );
+
+                    }
+
+
+                    if (image) {
+
+                        gsap.to(
+
+                            image,
+
+                            {
+
+                                x:
+                                    (
+                                        x -
+                                        rect.width / 2
+                                    ) * -0.03,
+
+                                y:
+                                    (
+                                        y -
+                                        rect.height / 2
+                                    ) * -0.03,
+
+                                duration:
+                                    0.6,
+
+                                ease:
+                                    "power2.out",
+
+                                overwrite:
+                                    "auto"
+
+                            }
+
+                        );
+
+                    }
+
+                }
+            );
+
+        }
 
     }
 
@@ -2150,6 +2439,373 @@ if (backTop) {
 
 
 /* =========================================================
+   36. CUSTOM CURSOR
+   NOTE: requires two elements in the HTML, placed once,
+   right before </body>:
+   <div class="custom-cursor"></div>
+   <div class="custom-cursor-dot"></div>
+   Basic CSS: fixed position, pointer-events:none, z-index
+   above everything, border-radius:50%, top:0; left:0;
+   transform is handled entirely by GSAP below.
+   ========================================================= */
+
+const customCursor =
+    document.querySelector(
+        ".custom-cursor"
+    );
+
+
+const customCursorDot =
+    document.querySelector(
+        ".custom-cursor-dot"
+    );
+
+
+if (
+    customCursor &&
+    customCursorDot &&
+    window.matchMedia(
+        "(pointer: fine)"
+    ).matches
+) {
+
+    document.body.classList.add(
+        "has-custom-cursor"
+    );
+
+
+    const ringPos = {
+
+        x:
+            window.innerWidth / 2,
+
+        y:
+            window.innerHeight / 2
+
+    };
+
+
+    const mouse = {
+
+        x:
+            ringPos.x,
+
+        y:
+            ringPos.y
+
+    };
+
+
+    window.addEventListener(
+        "mousemove",
+        (event) => {
+
+            mouse.x =
+                event.clientX;
+
+            mouse.y =
+                event.clientY;
+
+
+            gsap.set(
+
+                customCursorDot,
+
+                {
+
+                    x:
+                        mouse.x,
+
+                    y:
+                        mouse.y
+
+                }
+
+            );
+
+        }
+    );
+
+
+    gsap.ticker.add(
+
+        () => {
+
+            ringPos.x +=
+                (
+                    mouse.x -
+                    ringPos.x
+                ) * 0.15;
+
+
+            ringPos.y +=
+                (
+                    mouse.y -
+                    ringPos.y
+                ) * 0.15;
+
+
+            gsap.set(
+
+                customCursor,
+
+                {
+
+                    x:
+                        ringPos.x,
+
+                    y:
+                        ringPos.y
+
+                }
+
+            );
+
+        }
+
+    );
+
+
+    const interactiveSelectors =
+        "a, button, .project-card, .skill-card, .magnetic, input, textarea";
+
+
+    document.querySelectorAll(
+
+        interactiveSelectors
+
+    ).forEach(
+
+        (element) => {
+
+            element.addEventListener(
+                "mouseenter",
+                () => {
+
+                    customCursor.classList.add(
+                        "cursor-hover"
+                    );
+
+                }
+            );
+
+
+            element.addEventListener(
+                "mouseleave",
+                () => {
+
+                    customCursor.classList.remove(
+                        "cursor-hover"
+                    );
+
+                }
+            );
+
+        }
+
+    );
+
+
+    document.addEventListener(
+        "mousedown",
+        () => {
+
+            customCursor.classList.add(
+                "cursor-active"
+            );
+
+        }
+    );
+
+
+    document.addEventListener(
+        "mouseup",
+        () => {
+
+            customCursor.classList.remove(
+                "cursor-active"
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   37. MAGNETIC BUTTONS
+   Add class="magnetic" to any button/link you want this
+   effect on (e.g. hero CTAs, the contact email button,
+   back-to-top). Works alongside the custom cursor above.
+   ========================================================= */
+
+document.querySelectorAll(
+
+    ".magnetic"
+
+).forEach(
+
+    (element) => {
+
+        const strength =
+            parseFloat(
+                element.dataset.magneticStrength
+            ) || 0.4;
+
+
+        element.addEventListener(
+            "mousemove",
+            (event) => {
+
+                const rect =
+                    element.getBoundingClientRect();
+
+
+                const x =
+                    event.clientX -
+                    rect.left -
+                    rect.width / 2;
+
+
+                const y =
+                    event.clientY -
+                    rect.top -
+                    rect.height / 2;
+
+
+                gsap.to(
+
+                    element,
+
+                    {
+
+                        x:
+                            x * strength,
+
+                        y:
+                            y * strength,
+
+                        duration:
+                            0.5,
+
+                        ease:
+                            "power3.out",
+
+                        overwrite:
+                            "auto"
+
+                    }
+
+                );
+
+
+                const label =
+                    element.querySelector(
+                        ".magnetic-label"
+                    );
+
+
+                if (label) {
+
+                    gsap.to(
+
+                        label,
+
+                        {
+
+                            x:
+                                x * strength * 0.4,
+
+                            y:
+                                y * strength * 0.4,
+
+                            duration:
+                                0.5,
+
+                            ease:
+                                "power3.out",
+
+                            overwrite:
+                                "auto"
+
+                        }
+
+                    );
+
+                }
+
+            }
+        );
+
+
+        element.addEventListener(
+            "mouseleave",
+            () => {
+
+                gsap.to(
+
+                    element,
+
+                    {
+
+                        x:
+                            0,
+
+                        y:
+                            0,
+
+                        duration:
+                            0.7,
+
+                        ease:
+                            "elastic.out(1,0.4)"
+
+                    }
+
+                );
+
+
+                const label =
+                    element.querySelector(
+                        ".magnetic-label"
+                    );
+
+
+                if (label) {
+
+                    gsap.to(
+
+                        label,
+
+                        {
+
+                            x:
+                                0,
+
+                            y:
+                                0,
+
+                            duration:
+                                0.7,
+
+                            ease:
+                                "elastic.out(1,0.4)"
+
+                        }
+
+                    );
+
+                }
+
+            }
+        );
+
+    }
+
+);
+
+
+/* =========================================================
    34. REFRESH SCROLLTRIGGER
    ========================================================= */
 
@@ -2188,5 +2844,28 @@ if (
         .timeScale(
             0
         );
+
+
+    if (lenis) {
+
+        lenis.destroy();
+
+    }
+
+
+    if (customCursor) {
+
+        customCursor.style.display =
+            "none";
+
+    }
+
+
+    if (customCursorDot) {
+
+        customCursorDot.style.display =
+            "none";
+
+    }
 
 }
