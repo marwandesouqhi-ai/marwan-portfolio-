@@ -21,6 +21,14 @@
     const bar = box.querySelector(".lightbox-bar");
     let items = [], index = 0, title = "", opener = null;
 
+    const preload = (i) => {
+        const item = items[(i + items.length) % items.length];
+        if (item && item.src) {
+            const pre = new Image();
+            pre.src = item.src;
+        }
+    };
+
     const show = (i) => {
         index = (i + items.length) % items.length;
         const it = items[index];
@@ -29,6 +37,8 @@
         bar.innerHTML = `<b></b> · <span></span> · ${index + 1}/${items.length}`;
         bar.querySelector("b").textContent = title;
         bar.querySelector("span").textContent = it.caption;
+        preload(index + 1);
+        preload(index - 1);
     };
 
     const open = (trigger) => {
@@ -54,6 +64,20 @@
     box.querySelector(".lb-prev").addEventListener("click", () => show(index - 1));
     box.querySelector(".lb-next").addEventListener("click", () => show(index + 1));
     box.addEventListener("click", (e) => { if (e.target === box) close(); });
+
+    // Touch swipe support for mobile
+    let touchStartX = 0;
+    box.addEventListener("touchstart", (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+    box.addEventListener("touchend", (e) => {
+        const touchEndX = e.changedTouches[0].screenX;
+        const diff = touchEndX - touchStartX;
+        if (Math.abs(diff) > 50) {
+            if (diff < 0) show(index + 1);
+            else show(index - 1);
+        }
+    }, { passive: true });
 
     document.addEventListener("keydown", (e) => {
         if (!box.classList.contains("open")) return;
