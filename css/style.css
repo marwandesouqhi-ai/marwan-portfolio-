@@ -305,8 +305,8 @@ button:focus-visible {
         linear-gradient(rgba(56, 189, 248, 0.025) 1px, transparent 1px),
         linear-gradient(90deg, rgba(56, 189, 248, 0.025) 1px, transparent 1px);
     background-size: 60px 60px;
-    mask-image: linear-gradient(to bottom, #000, transparent 85%);
     -webkit-mask-image: linear-gradient(to bottom, #000, transparent 85%);
+    mask-image: linear-gradient(to bottom, #000, transparent 85%);
 }
 
 .eyebrow,
@@ -345,8 +345,8 @@ button:focus-visible {
 .hero-title strong {
     display: block;
     background: var(--grad-title);
-    background-clip: text;
     -webkit-background-clip: text;
+    background-clip: text;
     color: transparent;
 }
 
@@ -947,7 +947,7 @@ footer {
 
     .hero {
         grid-template-columns: 1fr;
-        min-height: auto;
+        min-height: 0;
         padding-top: 140px;
     }
 
@@ -1109,6 +1109,7 @@ footer {
     color: #fff;
     background: rgba(5, 8, 20, 0.78);
     border: 1px solid rgba(255, 255, 255, 0.18);
+    -webkit-backdrop-filter: blur(6px);
     backdrop-filter: blur(6px);
     padding: 6px 11px;
     border-radius: 20px;
@@ -1146,6 +1147,7 @@ footer {
     gap: 14px;
     padding: 56px 16px 24px;
     background: rgba(3, 5, 12, 0.94);
+    -webkit-backdrop-filter: blur(8px);
     backdrop-filter: blur(8px);
 }
 
