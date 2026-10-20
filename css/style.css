@@ -28,6 +28,10 @@
     --c-card-bg: #080e1d;
     --c-nav-bg: rgba(5, 8, 20, 0.7);
 
+    /* Layout */
+    --wrap: 1500px;
+    --wrap-pad: calc(var(--wrap) * 0.07);
+
     /* Gradients */
     --grad-btn: linear-gradient(135deg, var(--c-blue), var(--c-indigo));
     --grad-title: linear-gradient(90deg, #fff, #6da7ff, var(--c-purple-light));
@@ -142,7 +146,7 @@ body::before {
     left: 0;
     width: 100%;
     height: 74px;
-    padding: 0 7%;
+    padding: 0 max(7%, calc((100% - var(--wrap)) / 2 + var(--wrap-pad)));
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -186,6 +190,15 @@ body::before {
     display: flex;
     gap: 28px;
     list-style: none;
+}
+
+.nav-cv-mobile {
+    display: none;
+}
+
+.nav-links .nav-cv-mobile a {
+    color: var(--c-blue-light);
+    font-weight: 700;
 }
 
 .nav-links a {
@@ -268,7 +281,7 @@ button:focus-visible {
 .section {
     position: relative;
     padding: 120px 7%;
-    max-width: 1500px;
+    max-width: var(--wrap);
     margin: auto;
 }
 
@@ -907,6 +920,13 @@ footer {
         display: none;
         flex-direction: column;
         gap: 20px;
+        max-height: calc(100vh - 74px);
+        max-height: calc(100dvh - 74px);
+        overflow-y: auto;
+    }
+
+    .nav-cv-mobile {
+        display: block;
     }
 
     .nav-links.open {
@@ -959,6 +979,10 @@ footer {
 
     .project-grid {
         grid-template-columns: 1fr;
+    }
+
+    .project-art {
+        height: clamp(200px, 48vw, 340px);
     }
 
     .projects-head {
@@ -1041,4 +1065,243 @@ footer {
     object-fit: cover;
     object-position: center;
     border-radius: inherit;
+}
+/* ==========================================================================
+   Project screenshots + gallery lightbox
+   ========================================================================== */
+.project-shot {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    border-bottom: 1px solid var(--c-border);
+    background: #0b1224;
+    cursor: zoom-in;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+}
+
+.project-shot::before {
+    display: none;
+}
+
+.project-shot img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+    transition: transform 0.6s ease;
+}
+
+.project-card:hover .project-shot img {
+    transform: scale(1.04);
+}
+
+.project-art.project-shot .shot-hint {
+    position: absolute;
+    right: 14px;
+    bottom: 14px;
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: #fff;
+    background: rgba(5, 8, 20, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(6px);
+    padding: 6px 11px;
+    border-radius: 20px;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.project-shot:hover .shot-hint,
+.project-shot:focus-visible .shot-hint {
+    opacity: 1;
+    transform: none;
+}
+
+.project-shot:focus-visible {
+    outline: 2px solid var(--c-blue-light);
+    outline-offset: -4px;
+}
+
+@media (hover: none) {
+    .project-art.project-shot .shot-hint {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+.lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 56px 16px 24px;
+    background: rgba(3, 5, 12, 0.94);
+    backdrop-filter: blur(8px);
+}
+
+.lightbox.open {
+    display: flex;
+}
+
+.lightbox-stage {
+    position: relative;
+    max-width: min(1280px, 100%);
+    max-height: calc(100vh - 150px);
+    display: flex;
+    justify-content: center;
+}
+
+.lightbox-stage img {
+    max-width: 100%;
+    max-height: calc(100vh - 150px);
+    object-fit: contain;
+    border-radius: 12px;
+    border: 1px solid var(--c-border);
+    background: #0b1224;
+}
+
+.lightbox-bar {
+    color: #cbd5e1;
+    font-size: 13px;
+    text-align: center;
+}
+
+.lightbox-bar b {
+    color: #fff;
+}
+
+.lightbox button {
+    position: absolute;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    font-size: 20px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.lightbox button:hover,
+.lightbox button:focus-visible {
+    background: var(--c-blue);
+}
+
+.lightbox .lb-close {
+    top: 14px;
+    right: 14px;
+}
+
+.lightbox .lb-prev {
+    left: 14px;
+    top: 50%;
+}
+
+.lightbox .lb-next {
+    right: 14px;
+    top: 50%;
+}
+
+@media (max-width: 600px) {
+
+    .lightbox .lb-prev,
+    .lightbox .lb-next {
+        top: auto;
+        bottom: 14px;
+    }
+}
+
+/* ==========================================================================
+   Extra responsive polish
+   ========================================================================== */
+@media (min-width: 1800px) {
+    :root {
+        --wrap: 1700px;
+    }
+}
+
+@media (min-width: 2300px) {
+    :root {
+        --wrap: 1900px;
+    }
+}
+
+.portrait-wrap {
+    max-width: 100%;
+}
+
+@media (max-width: 480px) {
+    .section {
+        padding: 80px 5%;
+    }
+
+    .portrait-wrap {
+        width: min(290px, 100%);
+    }
+
+    .code-card {
+        top: 12px;
+        right: 0;
+        transform: scale(0.62);
+        transform-origin: top right;
+    }
+
+    .availability {
+        left: 0;
+        bottom: 12px;
+        transform: scale(0.8);
+        transform-origin: bottom left;
+    }
+
+    .project-info {
+        padding: 20px;
+    }
+
+    .contact-card {
+        padding: 26px 22px;
+    }
+}
+
+@media (max-width: 360px) {
+    .hero-title {
+        font-size: 54px;
+    }
+
+    .nav {
+        padding: 0 5%;
+    }
+
+    .stat b {
+        font-size: 34px;
+    }
+
+    .stat {
+        padding: 22px;
+    }
+}
+
+@media (max-height: 520px) and (max-width: 900px) {
+    .hero {
+        padding-top: 110px;
+    }
+}
+
+@media (min-width: 901px) and (max-width: 1250px) {
+    .code-card {
+        top: 0;
+        right: -10px;
+        transform: scale(0.8);
+        transform-origin: top right;
+    }
 }
